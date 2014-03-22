@@ -87,7 +87,6 @@
 
 (defn fill
   [[x & xs]]
-  (println "fill" x xs)
   (cond
    (nil? x)  (empty)
    (nil? xs) x
@@ -183,3 +182,52 @@
   [w]
   (print (pretty w (show-tree tree))))
 
+;;; XML
+(def xml
+  {:elt "p"
+   :attrs [{:name "color" :value "red"}
+           {:name "font"  :value "times"}
+           {:name "size"  :value "10"}]
+   :cs    ["Here is some"
+           {:elt "em"
+            :cs ["emphasized"]}
+           "text."
+           "Here is a "
+           {:elt "a"
+            :attrs [{:name "href" :value "http://www.eg.com/"}]
+            :cs ["link"]}
+           "elsewhere."]
+   })
+
+(defn show-fill
+  [f xs]
+  (if (empty? xs)
+    (empty)
+    (bracket "" (fill (apply clojure.core/concat (map f xs))) "")))
+
+(defn show-attr
+  [a]
+  ;; TODO: quote the value
+  [(concat (text (:name a)) (text "=") (text (str "\"" (:value a) "\"")))])
+
+(defn show-tag
+  [x]
+  (concat (text (:elt x)) (show-fill show-attr (:attrs x))))
+
+(defn show-xmls
+  [x]
+  (cond
+   (string? x) (map text (s/split x #"\s+"))
+   (and (:elt x) (:cs x)) [(concat (text "<") (show-tag x) (text ">")
+                                   (show-fill show-xmls (:cs x))
+                                   (text "</") (text (:elt x)) (text ">"))]
+   (:elt x)               [(concat (text "<") (show-tag x) (text "/>"))]
+))
+
+(defn show-xml
+  [x]
+  (folddoc concat (show-xmls x)))
+
+(defn testxml
+  [w]
+  (print (pretty w (show-xml xml))))
