@@ -1,7 +1,13 @@
 (ns purdy.core)
 
 ;; TODO:
+;; split into multiple name spaces
+;; add combinators
+;; tests
 ;; empty, flatten, and concat all collide with clojure names
+;; add lazyness
+;; add print functions
+;; add configuration params: width, max length
 
 ;; DOC
 (defprotocol IDocument
