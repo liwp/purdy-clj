@@ -17,42 +17,36 @@
 (defrecord DEmpty []
   IDocument
   (flatten [this]
-    (println "flatten" this)
     this))
 
 ;; DOC | DOC :<> DOC
 (defrecord DConcat [doc-a doc-b]
   IDocument
   (flatten [this]
-    (println "flatten" this)
     (concat (flatten doc-a) (flatten doc-b))))
 
 ;; DOC | NEST Int DOC
 (defrecord DNest [i doc]
   IDocument
   (flatten [this]
-    (println "flatten" this)
     (nest i (flatten doc))))
 
 ;; DOC | TEXT String
 (defrecord DText [s]
   IDocument
   (flatten [this]
-    (println "flatten" this)
     this))
 
 ;; DOC | LINE
 (defrecord DLine []
   IDocument
   (flatten [this]
-    (println "flatten" this)
     (text " ")))
 
 ;; DOC | DOC :<|> DOC
 (defrecord DAlt [doc-a doc-b]
   IDocument
   (flatten [this]
-    (println "flatten" this)
     (flatten doc-a)))
 
 ;;; ctor functions
@@ -83,7 +77,6 @@
 
 (defn group
   [doc]
-  (println "group" doc)
   (alt (flatten doc) doc))
 
 ;; Doc
@@ -99,7 +92,6 @@
   (layout [this]
     "")
   (fits [this w]
-    (println "fits" w this)
     (pos? w)))
 
 ;; Doc | String `Text` Doc
@@ -109,7 +101,6 @@
     (str s (layout doc)))
   
   (fits [this w]
-    (println "fits" w this)
     (fits doc (- w (count s)))))
 
 (defn indent
@@ -123,7 +114,6 @@
     (str (indent i) (layout doc)))
 
   (fits [this w]
-    (println "fits" w this)
     (pos? w)))
 
 ;; rename to layout?
@@ -135,41 +125,34 @@
 
 (defmethod be DEmpty
   [w k [[i doc] & docs]]
-  (println "DEmpty" w k i doc docs)
   (be w k doc))
 
 (defmethod be DConcat
   [w k [[i doc] & docs]]
-  (println "DConcat" w k i doc docs)
   (be w k (clojure.core/concat [[i (:doc-a doc)]] [[i (:doc-b doc)]] docs)))
 
 (defmethod be DNest
   [w k [[i doc] & docs]]
-  (println "DNest" w k i doc docs)
   (be w k (clojure.core/concat [[(+ k i) doc]] docs)))
 
 (defmethod be DText
   [w k [[i doc] & docs]]
-  (println "DText" w k i doc docs)
   (let [s (:s doc)]
     (->LText s (be w (+ k (count s)) docs))))
 
 (defmethod be DLine
   [w k [[i doc] & docs]]
-  (println "DLine" w k i doc docs)
   (->LLine i (be w i docs)))
 
 ;; TODO: lazy y
 (defn better
   [w k x y]
-  (println "better" w k x y)
   (if (fits x (- w k))
     x
     y))
 
 (defmethod be DAlt
   [w k [[i doc] & docs]]
-  (println "DAlt" w k i doc docs)
   (better w k
           (be w k (clojure.core/concat [[i (:doc-a doc)]] docs))
           (be w k (clojure.core/concat [[i (:doc-b doc)]] docs))))
