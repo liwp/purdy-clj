@@ -32,7 +32,9 @@
 
 (defcase string-print :purdy
   [s]
-  (pretty 80 (fillwords s)))
+  (with-out-str
+   (print
+    (pretty 80 (fillwords s)))))
 
 (defcase string-print :pprint
   [s]

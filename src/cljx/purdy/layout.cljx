@@ -34,12 +34,11 @@
   (fits [this w]
     (>= w 0)))
 
-;; TODO: lazy y
 (defn better
   [w k x y]
   (if (fits x (- w k))
     x
-    y))
+    (force y)))
 
 ;; TODO: rename to layout?
 (defmulti be (fn [w k [[i doc] & docs]] (type doc)))
@@ -75,7 +74,7 @@
   (better w
           k
           (be w k (clojure.core/concat [[i (:doc-a doc)]] docs))
-          (be w k (clojure.core/concat [[i (:doc-b doc)]] docs))))
+          (delay (be w k (clojure.core/concat [[i (:doc-b doc)]] docs)))))
 
 (defn best
   [w k doc]
