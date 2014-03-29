@@ -53,28 +53,27 @@
 
 (defmethod be purdy.document.DConcat
   [w k [[i doc] & docs]]
-  (be w k (clojure.core/concat [[i (:doc-a doc)]] [[i (:doc-b doc)]] docs)))
+  (be w k (clojure.core/concat [[i (:head doc)]] [[i (:tail doc)]] docs)))
 
 (defmethod be purdy.document.DNest
   [w k [[i doc] & docs]]
-  (be w k (clojure.core/concat [[(+ i (:i doc)) (:doc doc)]] docs)))
+  (be w k (clojure.core/concat [[(+ i (:indent doc)) (:doc doc)]] docs)))
 
 (defmethod be purdy.document.DText
   [w k [[i doc] & docs]]
-  (let [s (:s doc)]
+  (let [s (:text doc)]
     (->LText s (be w (+ k (count s)) docs))))
 
 (defmethod be purdy.document.DLine
   [w k [[i doc] & docs]]
   (->LLine i (be w i docs)))
 
-;; TODO: doc-b should be lazy
 (defmethod be purdy.document.DAlt
   [w k [[i doc] & docs]]
   (better w
           k
-          (be w k (clojure.core/concat [[i (:doc-a doc)]] docs))
-          (delay (be w k (clojure.core/concat [[i (:doc-b doc)]] docs)))))
+          (be w k (clojure.core/concat [[i (:a doc)]] docs))
+          (delay (be w k (clojure.core/concat [[i (force (:b doc))]] docs)))))
 
 (defn best
   [w k doc]
