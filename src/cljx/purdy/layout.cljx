@@ -14,22 +14,22 @@
   (fits [this w]
     (>= w 0)))
 
-(defrecord LText [s doc]
+(defrecord LText [text doc]
   ILayout
   (layout [this]
-    (str s (layout doc)))
+    (str text (layout doc)))
   
   (fits [this w]
-    (fits doc (- w (count s)))))
+    (fits doc (- w (count text)))))
 
-(defn indent
+(defn spaces
   [n]
   (apply str \newline (repeat n \space)))
 
-(defrecord LLine [i doc]
+(defrecord LLine [indent doc]
   ILayout
   (layout [this]
-    (str (indent i) (layout doc)))
+    (str (spaces indent) (layout doc)))
 
   (fits [this w]
     (>= w 0)))
