@@ -2,13 +2,12 @@
   (:require [purdy.document :as doc]))
 
 (defprotocol ILayout
-  ;; rename to to-string?
-  (layout [this] "Render this layout item as a string.")
+  (to-string [this] "Render this layout item as a string.")
   (fits [this w] "Does this item fit in the available space?"))
 
 (defrecord LNil []
   ILayout
-  (layout [this]
+  (to-string [this]
     "")
 
   (fits [this w]
@@ -16,8 +15,8 @@
 
 (defrecord LText [text doc]
   ILayout
-  (layout [this]
-    (str text (layout doc)))
+  (to-string [this]
+    (str text (to-string doc)))
   
   (fits [this w]
     (fits doc (- w (count text)))))
@@ -28,8 +27,8 @@
 
 (defrecord LLine [indent doc]
   ILayout
-  (layout [this]
-    (str (spaces indent) (layout doc)))
+  (to-string [this]
+    (str (spaces indent) (to-string doc)))
 
   (fits [this w]
     (>= w 0)))
@@ -40,45 +39,44 @@
     x
     (force y)))
 
-;; TODO: rename to layout?
-(defmulti be (fn [w k [[i doc] & docs]] (type doc)))
+(defmulti layout (fn [w k [[i doc] & docs]] (type doc)))
 
-(defmethod be nil
+(defmethod layout nil
   [w k docs]
   (->LNil))
 
-(defmethod be purdy.document.DEmpty
+(defmethod layout purdy.document.DEmpty
   [w k [[i doc] & docs]]
-  (be w k docs))
+  (layout w k docs))
 
-(defmethod be purdy.document.DConcat
+(defmethod layout purdy.document.DConcat
   [w k [[i doc] & docs]]
-  (be w k (clojure.core/concat [[i (:head doc)]] [[i (:tail doc)]] docs)))
+  (layout w k (concat [[i (:head doc)]] [[i (:tail doc)]] docs)))
 
-(defmethod be purdy.document.DNest
+(defmethod layout purdy.document.DNest
   [w k [[i doc] & docs]]
-  (be w k (clojure.core/concat [[(+ i (:indent doc)) (:doc doc)]] docs)))
+  (layout w k (concat [[(+ i (:indent doc)) (:doc doc)]] docs)))
 
-(defmethod be purdy.document.DText
+(defmethod layout purdy.document.DText
   [w k [[i doc] & docs]]
   (let [s (:text doc)]
-    (->LText s (be w (+ k (count s)) docs))))
+    (->LText s (layout w (+ k (count s)) docs))))
 
-(defmethod be purdy.document.DLine
+(defmethod layout purdy.document.DLine
   [w k [[i doc] & docs]]
-  (->LLine i (be w i docs)))
+  (->LLine i (layout w i docs)))
 
-(defmethod be purdy.document.DAlt
+(defmethod layout purdy.document.DAlt
   [w k [[i doc] & docs]]
   (better w
           k
-          (be w k (clojure.core/concat [[i (:a doc)]] docs))
-          (delay (be w k (clojure.core/concat [[i (force (:b doc))]] docs)))))
+          (layout w k (concat [[i (:a doc)]] docs))
+          (delay (layout w k (concat [[i (force (:b doc))]] docs)))))
 
 (defn best
   [w k doc]
-  (be w k [[0 doc]]))
+  (layout w k [[0 doc]]))
 
 (defn layout-doc
   [w doc]
-  (layout (best w 0 doc)))
+  (to-string (best w 0 doc)))
