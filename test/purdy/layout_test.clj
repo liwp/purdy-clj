@@ -1,4 +1,4 @@
-(ns purdy.core-test
+(ns purdy.layout-test
   (:require [clojure.test :refer :all]
             [purdy.layout :refer :all]
             [purdy.document :refer :all]))
