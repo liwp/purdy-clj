@@ -38,3 +38,25 @@
   (alt (concat (text "[") (nest 2 (concat (text " ") (text "1") (text " ") (text "2"))) (text " ") (text "]"))
        (delay (concat (text "[") (nest 2 (concat (line) (text "1") (line) (text "2"))) (line) (text "]")))))
 
+(deftest layout-vector-tests
+  (testing "laid out on one line"
+    (is (= (layout 80 0 [[0 two-elem-vector]])
+           (->LText "["
+                    (->LText " "
+                             (->LText "1"
+                                      (->LText " "
+                                               (->LText "2"
+                                                        (->LText " "
+                                                                 (->LText "]"
+                                                                          (->LNil)))))))))))
+
+  (testing "laid out horizontally"
+    (is (= (layout 2 0 [[0 two-elem-vector]])
+           (->LText "["
+                    (->LLine 2
+                             (->LText "1"
+                                      (->LLine 2
+                                               (->LText "2"
+                                                        (->LLine 0
+                                                                 (->LText "]"
+                                                                          (->LNil))))))))))))
